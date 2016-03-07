@@ -1,0 +1,81 @@
+<html>
+<head>
+	<meta charset="UTF-8" />
+	<title></title>
+</head>
+<body>
+	<label>num1: <input id="num1"></label><br/>
+	<label>num2: <input id="num2"></label><br/>
+	<label>  op: <input id="op"></label><br/>
+	<button type="button" onClick="calc_post()">calc_post</button> 
+	<button type="button" onClick="calc_get()">calc_get</button> 
+	<p>Результат: <label id="res"></label></p>
+	
+</body>
+<script type="text/javascript">
+	URL         = "http://localhost:8080/index";
+	METHOD_POST = "POST";
+	METHOD_GET  = "GET";
+
+	// контроллер
+	function calc_post(){	
+		calc(METHOD_POST);
+	};
+
+	function calc_get(){	
+		calc(METHOD_GET);
+	};
+
+	// роутинг
+	function calc(method){
+		var xhr   = new XMLHttpRequest();
+		var model = new Model();
+
+			 if(method == METHOD_POST) { xhr = model.method_post(xhr); }
+		else if(method == METHOD_GET)  { xhr =  model.method_get(xhr); }
+
+		get_response(xhr);
+	}
+
+	// модель
+	function Model(){
+		this.get_value = function(name){
+			return document.getElementById(name).value;
+		};
+		
+		this.num1 = this.get_value("num1");
+		this.num2 = this.get_value("num2");
+		this.op   = this.get_value("op");
+		
+		this.body = "num1=" + this.num1 + "&num2=" + this.num2 + "&op=" + this.op;
+		
+		this.method_post = function(xhr) {
+			xhr.open(METHOD_POST, URL);
+			xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+			xhr.send(this.body);
+			return xhr;
+		} 
+		
+		this.method_get = function(xhr) {
+			xhr.open(METHOD_GET, URL + "?"+ this.body);
+			xhr.send();
+			return xhr;
+		} 
+
+		return this;
+	}
+
+	// ответ
+	function get_response(xhr){
+		xhr.onreadystatechange = function() { 
+		  if (xhr.readyState != 4) return;
+
+		  if (xhr.status != 200) {
+		    alert(xhr.status + ': ' + xhr.statusText);
+		  } else {
+		    document.getElementById("res").innerHTML = xhr.responseText;
+		  }
+		}
+	}
+</script>
+</html>
